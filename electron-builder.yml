@@ -1,0 +1,46 @@
+appId: com.quicktranslate.app
+productName: QuickTranslate
+copyright: Copyright © 2026 QuickTranslate
+
+directories:
+  buildResources: build
+  output: release
+
+# uiohook-napi ships prebuilt N-API binaries (ABI-stable, Electron-compatible),
+# so we skip node-gyp rebuilds — packaging needs no MSVC/Python toolchain.
+npmRebuild: false
+
+# Keep the default include (**/*) so production node_modules (electron-store,
+# uiohook-napi) are bundled; only exclude sources/config we don't ship.
+files:
+  - '!**/.vscode/*'
+  - '!src/*'
+  - '!scripts/*'
+  - '!build/*'
+  - '!release/*'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintrc,.prettierrc,tsconfig*.json,*.md,.gitignore,electron-builder.yml}'
+
+# Native module (uiohook-napi) ships an .node binary that must stay outside asar.
+asarUnpack:
+  - '**/*.node'
+  - resources/**
+
+extraResources:
+  - from: resources
+    to: resources
+    filter: ['**/*']
+
+win:
+  target:
+    - nsis
+  icon: build/icon.ico
+  artifactName: ${productName}-${version}-setup.${ext}
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: QuickTranslate

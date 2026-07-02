@@ -1,0 +1,95 @@
+/* QuickTranslate — design tokens (dark theme, single). Matches tokens.css 1:1. */
+:root {
+  /* ---- Color · surfaces ---- */
+  --qt-window-top:      #242426;
+  --qt-window-bottom:   #1C1C1E;
+  --qt-surface:         #2A2A2C;
+  --qt-surface-elev:    #303032;
+  --qt-window-opacity:  0.94;
+  --qt-blur:            30px;
+
+  /* ---- Color · stroke ---- */
+  --qt-stroke:          rgba(255,255,255,0.08);
+  --qt-stroke-strong:   rgba(255,255,255,0.14);
+  --qt-highlight:       rgba(255,255,255,0.06);
+
+  /* ---- Color · text ---- */
+  --qt-text-primary:    #F2F2F0;
+  --qt-text-secondary:  #9B9B9E;
+  --qt-text-tertiary:   #6E6E72;
+
+  /* ---- Color · accent (terracotta) ---- */
+  --qt-accent:          #C1714A;
+  --qt-accent-hover:    #CE8058;
+  --qt-accent-press:    #A85A38;
+  --qt-accent-soft:     rgba(193,113,74,0.16);
+
+  /* ---- Color · status ---- */
+  --qt-error:           #E5484D;
+  --qt-error-soft:      rgba(229,72,77,0.14);
+  --qt-success:         #63B47A;
+
+  /* ---- Radius ---- */
+  --qt-radius-window:   18px;
+  --qt-radius-panel:    12px;
+  --qt-radius-control:  8px;
+  --qt-radius-pill:     999px;
+  --qt-radius-app-icon: 28%;
+
+  /* ---- Spacing (4px base) ---- */
+  --qt-space-1: 4px;
+  --qt-space-2: 8px;
+  --qt-space-3: 12px;
+  --qt-space-4: 16px;
+  --qt-space-5: 20px;
+  --qt-space-6: 24px;
+
+  /* ---- Typography ---- */
+  --qt-font: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --qt-fs-translation: 19px;  --qt-lh-translation: 1.5;   --qt-fw-translation: 500;
+  --qt-fs-original:    14px;  --qt-lh-original:    1.45;  --qt-fw-original:    400;
+  --qt-fs-input:       15px;  --qt-lh-input:       1.45;
+  --qt-fs-meta:        12px;  --qt-lh-meta:        1.3;
+  --qt-fs-lang-tag:    12px;  --qt-fw-lang-tag:    600;
+  --qt-fs-settings-title: 20px;
+  --qt-fs-section:     11px;  --qt-ls-section: 0.08em;
+
+  /* ---- Elevation ---- */
+  --qt-shadow-window: 0 24px 60px rgba(0,0,0,0.50), 0 2px 8px rgba(0,0,0,0.32);
+  --qt-shadow-popup:  0 4px 12px rgba(0,0,0,0.40);
+  --qt-shadow-menu:   0 12px 32px rgba(0,0,0,0.48);
+
+  /* ---- Motion ---- */
+  --qt-in-dur:   150ms;  --qt-in-ease:  cubic-bezier(0.16,1,0.3,1);
+  --qt-out-dur:  100ms;  --qt-out-ease: cubic-bezier(0.4,0,1,1);
+  --qt-scale-from: 0.96;
+  --qt-fade-dur: 180ms;
+
+  /* ---- Geometry ---- */
+  --qt-window-w:      420px;
+  --qt-window-h-min:  160px;
+  --qt-window-h-max:  420px;
+  --qt-popup-size:    32px;
+  --qt-settings-w:    480px;
+  --qt-settings-h:    560px;
+  --qt-debounce:      500ms;
+  --qt-popup-timeout: 2600ms;
+}
+
+/* Light theme — auto-applied via [data-theme='light'] when Windows is light.
+   Accent stays dynamic (set from JS). */
+:root[data-theme='light'] {
+  --qt-window-top:      #FCFCFD;
+  --qt-window-bottom:   #EFEFF2;
+  --qt-surface:         #FFFFFF;
+  --qt-surface-elev:    #F1F1F4;
+  --qt-stroke:          rgba(0,0,0,0.09);
+  --qt-stroke-strong:   rgba(0,0,0,0.16);
+  --qt-highlight:       rgba(255,255,255,0.85);
+  --qt-text-primary:    #17181A;
+  --qt-text-secondary:  #55565A;
+  --qt-text-tertiary:   #8A8B90;
+  --qt-error:           #D22E33;
+  --qt-error-soft:      rgba(210,46,51,0.12);
+  --qt-success:         #2E9E5B;
+}

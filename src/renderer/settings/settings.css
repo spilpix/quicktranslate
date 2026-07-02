@@ -1,0 +1,413 @@
+html,
+body,
+#root {
+  background: var(--qt-window-bottom);
+}
+
+.qt-settings {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background:
+    radial-gradient(120% 60% at 50% -10%, var(--qt-accent-soft), transparent 55%),
+    linear-gradient(var(--qt-window-top), var(--qt-window-bottom));
+  color: var(--qt-text-primary);
+}
+
+/* Title bar --------------------------------------------------------------- */
+.qt-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--qt-space-4) var(--qt-space-5);
+  -webkit-app-region: drag;
+}
+.qt-settings-title {
+  font-size: var(--qt-fs-settings-title);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.qt-settings-close {
+  -webkit-app-region: no-drag;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--qt-radius-control);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--qt-text-tertiary);
+  transition: color var(--qt-in-dur), background var(--qt-in-dur);
+}
+.qt-settings-close:hover {
+  color: var(--qt-text-primary);
+  background: var(--qt-surface-elev);
+}
+
+/* Body -------------------------------------------------------------------- */
+.qt-settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--qt-space-2) var(--qt-space-5) var(--qt-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-4);
+}
+
+/* each section is a subtle grouped card */
+.qt-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-3);
+  padding: var(--qt-space-4);
+  border-radius: var(--qt-radius-panel);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--qt-stroke);
+  box-shadow: inset 0 1px 0 var(--qt-highlight);
+}
+.qt-section-title {
+  font-size: var(--qt-fs-section);
+  letter-spacing: var(--qt-ls-section);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--qt-text-tertiary);
+}
+
+.qt-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qt-space-3);
+}
+/* divider between stacked rows (Behaviour) */
+.qt-section .qt-row + .qt-row {
+  border-top: 1px solid var(--qt-stroke);
+  padding-top: var(--qt-space-3);
+}
+.qt-row-label {
+  font-size: var(--qt-fs-input);
+  color: var(--qt-text-primary);
+}
+.qt-row-sub {
+  font-size: var(--qt-fs-meta);
+  line-height: 1.45;
+  color: var(--qt-text-tertiary);
+  margin-top: 2px;
+}
+.qt-row-col {
+  display: flex;
+  flex-direction: column;
+  padding-right: var(--qt-space-3);
+}
+
+/* Segmented control (provider) ------------------------------------------- */
+.qt-segment {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--qt-radius-control);
+  background: var(--qt-window-bottom);
+  border: 1px solid var(--qt-stroke);
+}
+.qt-segment-btn {
+  flex: 1;
+  padding: var(--qt-space-2);
+  border-radius: calc(var(--qt-radius-control) - 2px);
+  font-size: var(--qt-fs-meta);
+  font-weight: 500;
+  color: var(--qt-text-secondary);
+  transition: background var(--qt-in-dur), color var(--qt-in-dur);
+}
+.qt-segment-btn:hover {
+  color: var(--qt-text-primary);
+}
+.qt-segment-btn.is-active {
+  background: var(--qt-accent);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Inputs ------------------------------------------------------------------ */
+.qt-field,
+.qt-select {
+  width: 100%;
+  padding: var(--qt-space-2) var(--qt-space-3);
+  border-radius: var(--qt-radius-control);
+  background: var(--qt-surface);
+  border: 1px solid var(--qt-stroke);
+  color: var(--qt-text-primary);
+  font-size: var(--qt-fs-input);
+  outline: none;
+  transition: border-color var(--qt-in-dur), box-shadow var(--qt-in-dur);
+}
+.qt-field:focus,
+.qt-select:focus {
+  border-color: var(--qt-accent);
+  box-shadow: 0 0 0 3px var(--qt-accent-soft);
+}
+.qt-field {
+  user-select: text;
+}
+.qt-select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E6E72' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+.qt-pair {
+  display: flex;
+  align-items: center;
+  gap: var(--qt-space-2);
+}
+.qt-pair .qt-select {
+  flex: 1;
+}
+.qt-pair-arrow {
+  color: var(--qt-accent);
+  font-size: 15px;
+}
+.qt-pair-swap {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--qt-radius-control);
+  color: var(--qt-accent);
+  font-size: 15px;
+  transition: background var(--qt-in-dur), transform var(--qt-in-dur);
+}
+.qt-pair-swap:hover {
+  background: var(--qt-accent-soft);
+}
+.qt-pair-swap:active {
+  transform: scale(0.9);
+}
+
+.qt-inline {
+  display: flex;
+  gap: var(--qt-space-2);
+}
+.qt-inline .qt-field {
+  flex: 1;
+}
+
+/* Buttons ----------------------------------------------------------------- */
+.qt-btn {
+  padding: var(--qt-space-2) var(--qt-space-4);
+  border-radius: var(--qt-radius-control);
+  font-size: var(--qt-fs-input);
+  font-weight: 500;
+  background: var(--qt-surface-elev);
+  color: var(--qt-text-primary);
+  border: 1px solid var(--qt-stroke);
+  transition: background var(--qt-in-dur), border-color var(--qt-in-dur);
+  white-space: nowrap;
+}
+.qt-btn:hover {
+  background: var(--qt-stroke-strong);
+}
+.qt-btn-accent {
+  background: var(--qt-accent);
+  color: #fff;
+  border-color: transparent;
+}
+.qt-btn-accent:hover {
+  background: var(--qt-accent-hover);
+}
+.qt-btn-accent:active {
+  background: var(--qt-accent-press);
+}
+.qt-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.qt-link {
+  color: var(--qt-accent);
+  font-size: var(--qt-fs-meta);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.qt-link:hover {
+  color: var(--qt-accent-hover);
+  text-decoration: underline;
+}
+
+/* Toggle switch ----------------------------------------------------------- */
+.qt-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: var(--qt-radius-pill);
+  background: var(--qt-surface-elev);
+  border: 1px solid var(--qt-stroke);
+  transition: background var(--qt-in-dur);
+  flex-shrink: 0;
+}
+.qt-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--qt-text-secondary);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition: transform var(--qt-in-dur) var(--qt-in-ease), background var(--qt-in-dur);
+}
+.qt-switch.is-on {
+  background: var(--qt-accent);
+  border-color: transparent;
+}
+.qt-switch.is-on::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+.qt-switch.is-disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Status pills ------------------------------------------------------------ */
+.qt-status {
+  font-size: var(--qt-fs-meta);
+  padding: 2px var(--qt-space-2);
+  border-radius: var(--qt-radius-pill);
+}
+.qt-status-ok {
+  color: var(--qt-success);
+  background: rgba(99, 180, 122, 0.14);
+}
+.qt-status-warn {
+  color: var(--qt-error);
+  background: var(--qt-error-soft);
+}
+
+.qt-hotkey-box {
+  display: flex;
+  align-items: center;
+  gap: var(--qt-space-2);
+}
+.qt-hotkey-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--qt-space-2);
+  min-height: 36px;
+  padding: var(--qt-space-2) var(--qt-space-3);
+  border-radius: var(--qt-radius-control);
+  background: var(--qt-surface);
+  border: 1px solid var(--qt-stroke);
+  font-size: var(--qt-fs-input);
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+}
+
+/* keycap rendering of the current hotkey */
+.qt-key {
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: var(--qt-fs-meta);
+  font-weight: 500;
+  color: var(--qt-text-primary);
+  padding: 3px 8px 4px;
+  border-radius: 6px;
+  background: var(--qt-surface-elev);
+  border: 1px solid var(--qt-stroke-strong);
+  box-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.4);
+}
+:root[data-theme='light'] .qt-key {
+  box-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.15);
+}
+.qt-hotkey-display.is-capturing {
+  border-color: var(--qt-accent);
+  color: var(--qt-accent);
+  box-shadow: 0 0 0 3px var(--qt-accent-soft);
+}
+
+.qt-warn {
+  font-size: var(--qt-fs-meta);
+  line-height: 1.45;
+  color: var(--qt-error);
+}
+
+/* First-run welcome banner ------------------------------------------------ */
+.qt-welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-1);
+  padding: var(--qt-space-4);
+  border-radius: var(--qt-radius-panel);
+  background: var(--qt-accent-soft);
+  border: 1px solid rgba(193, 113, 74, 0.35);
+}
+.qt-welcome-title {
+  font-size: var(--qt-fs-input);
+  font-weight: 600;
+  color: var(--qt-text-primary);
+}
+.qt-welcome-text {
+  font-size: var(--qt-fs-meta);
+  line-height: 1.45;
+  color: var(--qt-text-secondary);
+}
+
+/* Translation history ----------------------------------------------------- */
+.qt-history {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-1);
+  max-height: 220px;
+  overflow-y: auto;
+}
+.qt-history-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+  padding: var(--qt-space-2) var(--qt-space-3);
+  border-radius: var(--qt-radius-control);
+  background: var(--qt-surface);
+  border: 1px solid var(--qt-stroke);
+  transition: background var(--qt-in-dur), border-color var(--qt-in-dur);
+}
+.qt-history-copied {
+  position: absolute;
+  top: var(--qt-space-2);
+  right: var(--qt-space-2);
+  font-size: var(--qt-fs-meta);
+  font-weight: 500;
+  color: var(--qt-success);
+  background: var(--qt-window-bottom);
+  border: 1px solid var(--qt-stroke);
+  border-radius: var(--qt-radius-pill);
+  padding: 1px var(--qt-space-2);
+}
+.qt-history-item:hover {
+  background: var(--qt-surface-elev);
+  border-color: var(--qt-accent);
+}
+.qt-history-tr {
+  font-size: var(--qt-fs-input);
+  color: var(--qt-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qt-history-src {
+  font-size: var(--qt-fs-meta);
+  color: var(--qt-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Light theme: section cards need a dark-on-light tint to read as grouped. */
+:root[data-theme='light'] .qt-section {
+  background: rgba(0, 0, 0, 0.025);
+}

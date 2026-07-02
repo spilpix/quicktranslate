@@ -1,0 +1,427 @@
+/* The window is a real (acrylic) window sized by the main process; the card
+   fills it, and the body scrolls / a grip resizes it for long text. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.qt-card {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* fills the OS-rounded acrylic window */
+  /* translucent surfaces let the Win11 acrylic blur show through (glass) */
+  background:
+    radial-gradient(130% 90% at 50% -20%, var(--qt-accent-soft), transparent 55%),
+    linear-gradient(rgba(40, 40, 43, 0.72), rgba(23, 23, 25, 0.8));
+  box-shadow: inset 0 0 0 1px var(--qt-stroke), inset 0 1px 0 var(--qt-highlight);
+  overflow: hidden;
+}
+/* Light theme: translucent light glass instead of dark. */
+:root[data-theme='light'] .qt-card {
+  background:
+    radial-gradient(130% 90% at 50% -20%, var(--qt-accent-soft), transparent 55%),
+    linear-gradient(rgba(252, 252, 253, 0.78), rgba(238, 238, 242, 0.84));
+}
+
+/* Header ------------------------------------------------------------------ */
+.qt-header {
+  display: flex;
+  align-items: center;
+  gap: var(--qt-space-2);
+  padding: var(--qt-space-3) var(--qt-space-4);
+  -webkit-app-region: drag;
+}
+.qt-header > .qt-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.qt-langs {
+  display: flex;
+  align-items: center;
+  gap: var(--qt-space-1);
+}
+
+/* language code pills */
+.qt-lang-tag {
+  font-size: var(--qt-fs-lang-tag);
+  font-weight: var(--qt-fw-lang-tag);
+  letter-spacing: 0.03em;
+  color: var(--qt-text-secondary);
+  text-transform: uppercase;
+  padding: 3px var(--qt-space-2);
+  border-radius: var(--qt-radius-pill);
+  background: var(--qt-surface);
+  border: 1px solid var(--qt-stroke);
+  line-height: 1;
+}
+
+.qt-swap {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--qt-radius-pill);
+  color: var(--qt-text-tertiary);
+  transition: color var(--qt-in-dur), background var(--qt-in-dur);
+}
+.qt-swap:hover {
+  color: var(--qt-accent);
+  background: var(--qt-accent-soft);
+}
+.qt-swap:active {
+  transform: scale(0.9);
+}
+
+.qt-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto; /* push actions to the right; the gap between is drag area */
+}
+.qt-iconbtn {
+  -webkit-app-region: no-drag;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--qt-radius-control);
+  color: var(--qt-text-tertiary);
+  transition: color var(--qt-in-dur), background var(--qt-in-dur);
+}
+.qt-iconbtn:hover {
+  color: var(--qt-text-primary);
+  background: var(--qt-surface-elev);
+}
+/* pinned = window survives blur */
+.qt-pin.is-on {
+  color: var(--qt-accent);
+  background: var(--qt-accent-soft);
+}
+.qt-pin.is-on:hover {
+  color: var(--qt-accent-hover);
+  background: var(--qt-accent-soft);
+}
+
+/* Body -------------------------------------------------------------------- */
+.qt-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-3);
+  padding: 0 var(--qt-space-4) var(--qt-space-3);
+  overflow-y: auto; /* long content scrolls; height is driven by auto-size/grip */
+}
+
+.qt-input-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.qt-input-clear {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--qt-radius-pill);
+  color: var(--qt-text-tertiary);
+  background: var(--qt-surface-elev);
+  transition: color var(--qt-in-dur), background var(--qt-in-dur);
+}
+.qt-input-clear:hover {
+  color: var(--qt-text-primary);
+  background: var(--qt-stroke-strong);
+}
+
+.qt-input {
+  width: 100%;
+  min-height: 46px;
+  max-height: 120px;
+  resize: none;
+  padding: var(--qt-space-3);
+  border-radius: var(--qt-radius-panel);
+  background: var(--qt-surface);
+  border: 1px solid var(--qt-stroke);
+  color: var(--qt-text-primary);
+  font-size: var(--qt-fs-input);
+  line-height: var(--qt-lh-input);
+  outline: none;
+  user-select: text;
+  transition: border-color var(--qt-in-dur), box-shadow var(--qt-in-dur);
+}
+.qt-input::placeholder {
+  color: var(--qt-text-tertiary);
+}
+.qt-input:focus {
+  border-color: var(--qt-accent);
+  box-shadow: 0 0 0 3px var(--qt-accent-soft);
+}
+
+/* Empty state ------------------------------------------------------------- */
+.qt-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--qt-space-2);
+  padding: var(--qt-space-3) var(--qt-space-1) var(--qt-space-1);
+  color: var(--qt-text-tertiary);
+  font-size: var(--qt-fs-meta);
+  line-height: var(--qt-lh-meta);
+}
+.qt-empty svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+/* Recent translations in the empty state ---------------------------------- */
+.qt-recent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.qt-recent-title {
+  font-size: var(--qt-fs-section);
+  letter-spacing: var(--qt-ls-section);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--qt-text-tertiary);
+  padding: var(--qt-space-1) var(--qt-space-2) var(--qt-space-2);
+}
+.qt-recent-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-align: left;
+  padding: var(--qt-space-2);
+  border-radius: var(--qt-radius-control);
+  transition: background var(--qt-in-dur);
+}
+.qt-recent-item:hover {
+  background: var(--qt-surface);
+}
+.qt-recent-tr {
+  font-size: var(--qt-fs-input);
+  color: var(--qt-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qt-recent-src {
+  font-size: var(--qt-fs-meta);
+  color: var(--qt-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Result ------------------------------------------------------------------ */
+.qt-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-3);
+  padding: var(--qt-space-3);
+  border-radius: var(--qt-radius-panel);
+  background: var(--qt-surface);
+  border: 1px solid var(--qt-stroke);
+}
+@keyframes qt-result-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.qt-result-in {
+  animation: qt-result-in var(--qt-in-dur) var(--qt-in-ease) both;
+}
+
+/* translation is the hero — and click-to-copy */
+.qt-translation {
+  position: relative;
+  font-size: var(--qt-fs-translation);
+  line-height: var(--qt-lh-translation);
+  font-weight: var(--qt-fw-translation);
+  color: var(--qt-text-primary);
+  user-select: text;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: pointer;
+  border-radius: var(--qt-radius-control);
+  margin: calc(var(--qt-space-1) * -1) calc(var(--qt-space-2) * -1);
+  padding: var(--qt-space-1) var(--qt-space-2);
+  transition: background var(--qt-in-dur);
+}
+.qt-translation:hover {
+  background: var(--qt-accent-soft);
+}
+.qt-copy-hint {
+  position: absolute;
+  top: var(--qt-space-1);
+  right: var(--qt-space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--qt-fs-meta);
+  font-weight: 500;
+  color: var(--qt-accent);
+  background: var(--qt-window-bottom);
+  border: 1px solid var(--qt-stroke);
+  padding: 2px var(--qt-space-2);
+  border-radius: var(--qt-radius-pill);
+  opacity: 0;
+  transition: opacity var(--qt-in-dur);
+  pointer-events: none;
+}
+.qt-translation:hover .qt-copy-hint {
+  opacity: 1;
+}
+.qt-copy-hint.is-done {
+  opacity: 1;
+  color: var(--qt-success);
+}
+.qt-copy-hint svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Footer / meta ----------------------------------------------------------- */
+.qt-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--qt-space-2);
+}
+.qt-chip {
+  font-size: var(--qt-fs-meta);
+  line-height: var(--qt-lh-meta);
+  color: var(--qt-text-tertiary);
+  padding: 2px var(--qt-space-2);
+  border-radius: var(--qt-radius-pill);
+  background: var(--qt-surface-elev);
+}
+.qt-kbd-hints {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--qt-space-1);
+}
+.qt-kbd-hint {
+  font-size: var(--qt-fs-meta);
+  color: var(--qt-text-tertiary);
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  border: 1px solid var(--qt-stroke);
+  border-radius: var(--qt-radius-control);
+  padding: 1px var(--qt-space-2);
+  white-space: nowrap;
+}
+
+/* Loading skeleton (feels faster than a spinner) -------------------------- */
+.qt-skeleton {
+  gap: var(--qt-space-2);
+}
+.qt-sk-line {
+  height: 12px;
+  border-radius: var(--qt-radius-pill);
+  background: linear-gradient(
+    90deg,
+    var(--qt-surface-elev) 25%,
+    var(--qt-stroke-strong) 37%,
+    var(--qt-surface-elev) 63%
+  );
+  background-size: 300% 100%;
+  animation: qt-shimmer 1.2s ease-in-out infinite;
+}
+.qt-sk-line.tall {
+  height: 16px;
+}
+@keyframes qt-shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* Error ------------------------------------------------------------------- */
+.qt-error {
+  display: flex;
+  flex-direction: column;
+  gap: var(--qt-space-3);
+  padding: var(--qt-space-3);
+  border-radius: var(--qt-radius-panel);
+  background: var(--qt-error-soft);
+  border: 1px solid rgba(229, 72, 77, 0.3);
+}
+.qt-error-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--qt-space-2);
+  color: var(--qt-error);
+  font-size: var(--qt-fs-input);
+  line-height: var(--qt-lh-input);
+}
+.qt-error-msg svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.qt-error-actions {
+  display: flex;
+  gap: var(--qt-space-2);
+}
+.qt-btn {
+  padding: var(--qt-space-2) var(--qt-space-3);
+  border-radius: var(--qt-radius-control);
+  font-size: var(--qt-fs-meta);
+  font-weight: 500;
+  background: var(--qt-surface-elev);
+  color: var(--qt-text-primary);
+  transition: background var(--qt-in-dur);
+}
+.qt-btn:hover {
+  background: var(--qt-stroke-strong);
+}
+.qt-btn-accent {
+  background: var(--qt-accent);
+  color: #fff;
+}
+.qt-btn-accent:hover {
+  background: var(--qt-accent-hover);
+}
+.qt-btn-accent:active {
+  background: var(--qt-accent-press);
+}
+
+/* Resize grip — drag the bottom edge to enlarge the window for long text ---- */
+.qt-resize-grip {
+  height: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ns-resize;
+  -webkit-app-region: no-drag;
+}
+.qt-resize-grip::after {
+  content: '';
+  width: 40px;
+  height: 4px;
+  border-radius: var(--qt-radius-pill);
+  background: var(--qt-stroke-strong);
+  transition: background var(--qt-in-dur);
+}
+.qt-resize-grip:hover::after {
+  background: var(--qt-accent);
+}

@@ -1,0 +1,140 @@
+@import './tokens.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: var(--qt-font);
+  color: var(--qt-text-primary);
+  background: transparent; /* transparent windows draw their own card */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  user-select: none;
+  cursor: default;
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: default;
+}
+
+/* Keyboard navigation: visible focus ring on controls, accent-tinted. */
+button:focus-visible,
+select:focus-visible,
+[role='switch']:focus-visible {
+  outline: 2px solid var(--qt-accent);
+  outline-offset: 1px;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--qt-stroke-strong);
+  border-radius: var(--qt-radius-pill);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Shared appear animation (fade + scale) from motion tokens. */
+@keyframes qt-appear {
+  from {
+    opacity: 0;
+    transform: scale(var(--qt-scale-from));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.qt-appear {
+  animation: qt-appear var(--qt-in-dur) var(--qt-in-ease) both;
+}
+
+@keyframes qt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.qt-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--qt-stroke-strong);
+  border-top-color: var(--qt-accent);
+  border-radius: 50%;
+  animation: qt-spin 0.7s linear infinite;
+}
+
+/* Custom tooltip — replaces the native OS title tooltip (styled to the app). */
+[data-tip] {
+  position: relative;
+}
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(2px);
+  white-space: nowrap;
+  font-size: var(--qt-fs-meta);
+  color: var(--qt-text-primary);
+  background: var(--qt-surface-elev);
+  border: 1px solid var(--qt-stroke);
+  border-radius: var(--qt-radius-control);
+  padding: 4px 9px;
+  box-shadow: var(--qt-shadow-menu);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--qt-in-dur) var(--qt-in-ease), transform var(--qt-in-dur) var(--qt-in-ease);
+  z-index: 50;
+}
+[data-tip]:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+[data-tip-align='right']::after {
+  left: auto;
+  right: 0;
+  transform: translateY(2px);
+}
+[data-tip-align='right']:hover::after {
+  transform: translateY(0);
+}
+
+/* Respect the OS reduced-motion preference: content still appears, just without
+   movement (entrances, shimmer, pulse). */
+@media (prefers-reduced-motion: reduce) {
+  .qt-appear,
+  .qt-result-in,
+  .qt-fade-in,
+  .qt-sk-line,
+  .qt-spinner,
+  .qt-popup::before {
+    animation: none !important;
+  }
+}

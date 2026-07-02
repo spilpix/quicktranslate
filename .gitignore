@@ -1,0 +1,14 @@
+node_modules/
+out/
+dist/
+release/
+site/
+build/icon.ico
+resources/tray-icon*.png
+*.log
+.DS_Store
+.env
+.vite/
+
+# local tooling
+.claude/
