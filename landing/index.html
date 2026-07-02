@@ -373,7 +373,7 @@
         Без аккаунтов и ключей — работает сразу после установки.
       </p>
       <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/spilpix/quicktranslate/releases/download/v0.1.0/QuickTranslate-0.1.0-setup.exe" download>
+        <a class="btn btn-primary" href="https://github.com/spilpix/quicktranslate/releases/latest/download/QuickTranslate-0.1.0-setup.exe" download>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5M5 20h14" /></svg>
           Скачать для Windows
         </a>
@@ -513,7 +513,7 @@
       <div class="r">
         <p class="eyebrow">Установка</p>
         <h2 style="margin-top: 14px">Попробуйте на своём тексте.</h2>
-        <a class="btn btn-primary" href="https://github.com/spilpix/quicktranslate/releases/download/v0.1.0/QuickTranslate-0.1.0-setup.exe" download>
+        <a class="btn btn-primary" href="https://github.com/spilpix/quicktranslate/releases/latest/download/QuickTranslate-0.1.0-setup.exe" download>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5M5 20h14" /></svg>
           Скачать для Windows
         </a>
@@ -531,6 +531,14 @@
   </footer>
 
   <script>
+    // Always open at the top on a normal load — some mobile browsers restore a
+    // stale scroll position and land you mid-page. Keep #anchor links working.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    function toTop() { if (!location.hash) window.scrollTo(0, 0); }
+    toTop();
+    addEventListener('load', toTop);
+    addEventListener('pageshow', (e) => { if (e.persisted) toTop(); });
+
     const nav = document.getElementById('top-nav');
     addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8), { passive: true });
 
