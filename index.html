@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickTranslate — перевод по Ctrl+T для Windows</title>
+  <meta name="description" content="Лёгкое окно перевода поверх любого приложения Windows. Ctrl+T или выделение текста. Без аккаунтов и ключей, бесплатно." />
+  <meta property="og:title" content="QuickTranslate — перевод по Ctrl+T" />
+  <meta property="og:description" content="Окно перевода поверх любого приложения Windows. Без аккаунтов и ключей." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231C1C1E'/%3E%3Cpath d='M8 10h8M11.5 10v1.6c0 3-1.7 5.4-4.2 6.6M9.6 13.4c0 2.2 2.2 4 4.6 4.8' stroke='%23C1714A' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M16.5 24.5 20 15l3.5 9.5M17.7 21.4h4.6' stroke='%23F2F2F0' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* canvas */
+      --bg: #0a0a0b;
+      --text: #f4f4f2;
+      --text-2: #9b9b9e;
+      --text-3: #6a6a6e;
+      --line: rgba(255, 255, 255, 0.07);
+      --line-2: rgba(255, 255, 255, 0.13);
+      --card: rgba(255, 255, 255, 0.024);
+      --card-hover: rgba(255, 255, 255, 0.04);
+      --accent: #c1714a;
+      --accent-soft: rgba(193, 113, 74, 0.16);
+
+      /* app tokens — the mockup mirrors src/renderer/shared/tokens.css */
+      --qt-window-top: #242426;
+      --qt-window-bottom: #1c1c1e;
+      --qt-surface: #2a2a2c;
+      --qt-stroke: rgba(255, 255, 255, 0.08);
+      --qt-text: #f2f2f0;
+      --qt-text-2: #9b9b9e;
+      --qt-text-3: #6e6e72;
+      --qt-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.32);
+
+      --font: "Inter", "Segoe UI", system-ui, sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+      --qt-font: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    ::selection { background: rgba(193, 113, 74, 0.35); }
+    a { color: inherit; text-decoration: none; }
+    .wrap { max-width: 1024px; margin: 0 auto; padding: 0 28px; }
+
+    /* ---------- nav ---------- */
+    header {
+      position: sticky; top: 0; z-index: 10;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    header.scrolled {
+      background: rgba(10, 10, 11, 0.72);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border-bottom-color: var(--line);
+    }
+    .nav {
+      max-width: 1024px; margin: 0 auto; padding: 18px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .brand svg { width: 22px; height: 22px; display: block; }
+    .nav-right { display: flex; align-items: center; gap: 26px; }
+    .nav-link { font-size: 14px; color: var(--text-2); transition: color 0.2s; }
+    .nav-link:hover { color: var(--text); }
+
+    /* ---------- buttons ---------- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 9px;
+      font: 600 15px/1 var(--font); letter-spacing: -0.01em;
+      padding: 13px 24px; border-radius: 10px; cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s var(--ease);
+    }
+    .btn:active { transform: scale(0.985); }
+    .btn-primary { background: var(--text); color: #0a0a0b; }
+    .btn-primary:hover { background: #ffffff; }
+    .btn-primary svg { width: 16px; height: 16px; }
+    .btn-quiet { background: transparent; color: var(--text); border-color: var(--line-2); }
+    .btn-quiet:hover { background: var(--card-hover); border-color: rgba(255, 255, 255, 0.22); }
+    .btn-sm { padding: 9px 16px; font-size: 13.5px; border-radius: 8px; }
+
+    /* ---------- hero ---------- */
+    .hero { padding: 92px 0 0; text-align: center; position: relative; }
+    .hero::before {
+      content: ""; position: absolute; inset: -120px 0 auto; height: 560px;
+      background: radial-gradient(46% 60% at 50% 0%, rgba(193, 113, 74, 0.055), transparent 70%);
+      pointer-events: none;
+    }
+    .hero > * { position: relative; }
+    .eyebrow {
+      font: 500 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-3);
+    }
+    h1 {
+      margin: 26px 0 0;
+      font-size: clamp(36px, 7.4vw, 78px);
+      font-weight: 600; letter-spacing: -0.035em; line-height: 1.04;
+    }
+    h1 .caps { white-space: nowrap; }
+    kbd.cap {
+      display: inline-block; vertical-align: baseline;
+      font: 500 0.62em/1 var(--mono); letter-spacing: 0;
+      color: var(--text);
+      padding: 0.28em 0.5em 0.34em;
+      border-radius: 0.16em;
+      background: linear-gradient(#2d2d30, #222225);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0.09em 0 rgba(0, 0, 0, 0.55),
+        0 0.22em 0.45em rgba(0, 0, 0, 0.35);
+      transform: translateY(-0.06em);
+    }
+    h1 .plus { color: var(--text-3); font-weight: 400; margin: 0 0.12em; }
+    .sub {
+      margin: 26px auto 0; max-width: 560px;
+      font-size: 18px; line-height: 1.6; color: var(--text-2); letter-spacing: -0.01em;
+    }
+    .cta { margin-top: 38px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero-meta {
+      margin-top: 22px;
+      font: 400 12.5px/1 var(--mono); color: var(--text-3); letter-spacing: 0.01em;
+    }
+    .hero-meta span + span::before { content: "·"; margin: 0 10px; color: var(--line-2); }
+
+    /* ---------- app window (mirrors the real UI) ---------- */
+    .stage { padding: 72px 0 40px; display: flex; justify-content: center; }
+    .qt {
+      width: min(480px, 100%);
+      font-family: var(--qt-font);
+      border-radius: 18px;
+      background: linear-gradient(var(--qt-window-top), var(--qt-window-bottom));
+      border: 1px solid var(--qt-stroke);
+      box-shadow: var(--qt-shadow);
+      text-align: left;
+    }
+    .qt-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; }
+    .qt-tag {
+      font: 600 12px/1 var(--qt-font); color: var(--qt-text-2);
+      background: var(--qt-surface); border: 1px solid var(--qt-stroke);
+      padding: 5px 10px; border-radius: 999px;
+    }
+    .qt-swap { color: var(--accent); display: flex; }
+    .qt-icons { margin-left: auto; display: flex; gap: 6px; color: var(--qt-text-3); }
+    .qt-icons span { display: flex; padding: 4px; border-radius: 6px; }
+    .qt svg { display: block; }
+    .qt-body { padding: 2px 16px 14px; }
+    .qt-input { font-size: 15px; line-height: 1.45; color: var(--qt-text-2); padding: 6px 0 14px; }
+    .caret {
+      display: inline-block; width: 1px; height: 1.05em; margin-left: 2px;
+      background: var(--qt-text); vertical-align: text-bottom;
+      animation: blink 1.1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .qt-result {
+      border-top: 1px solid var(--qt-stroke);
+      padding: 14px 0 0;
+    }
+    .qt-translation { font-size: 19px; font-weight: 500; line-height: 1.5; color: var(--qt-text); }
+    .qt-meta { display: flex; align-items: center; margin-top: 14px; font-size: 12px; color: var(--qt-text-3); }
+    .qt-meta-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .qt-esc {
+      font: 400 11px/1 var(--mono);
+      border: 1px solid var(--qt-stroke); border-radius: 6px; padding: 3px 7px 4px;
+    }
+    .floor {
+      width: 380px; max-width: 70%; height: 60px; margin: -18px auto 0;
+      background: radial-gradient(50% 100% at 50% 0%, rgba(0, 0, 0, 0.55), transparent 70%);
+      filter: blur(4px);
+    }
+
+    /* ---------- sections ---------- */
+    section { padding: 104px 0 0; }
+    .sec-head { margin-bottom: 40px; }
+    h2 { font-size: clamp(26px, 3.4vw, 34px); font-weight: 600; letter-spacing: -0.025em; margin-top: 14px; }
+
+    /* ---------- bento ---------- */
+    .bento { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+    .card {
+      grid-column: span 2;
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 24px; display: flex; flex-direction: column; gap: 18px;
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .card:hover { background: var(--card-hover); border-color: var(--line-2); }
+    .card.wide { grid-column: span 4; }
+    .card h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.015em; }
+    .card p { font-size: 14px; line-height: 1.55; color: var(--text-2); margin-top: 5px; }
+    .card-text { margin-top: auto; }
+    .vis {
+      min-height: 96px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* selection demo */
+    .vis-select { font-size: 15px; color: var(--text-2); line-height: 1.7; padding: 0 8px; display: block; align-content: center; }
+    .vis-select mark {
+      background: var(--accent-soft); color: var(--text); border-radius: 3px; padding: 1px 3px;
+    }
+    .pop {
+      display: inline-flex; width: 26px; height: 26px; margin: 0 0 -8px 8px;
+      align-items: center; justify-content: center;
+      border-radius: 8px; background: linear-gradient(#ce8058, #a85a38);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    }
+    .pop svg { width: 14px; height: 14px; }
+
+    /* direction demo */
+    .vis-dir { gap: 12px; font: 500 13px/1 var(--mono); color: var(--text-2); }
+    .chip {
+      padding: 7px 12px; border-radius: 999px;
+      background: var(--qt-surface); border: 1px solid var(--qt-stroke); color: var(--text);
+      font: 600 12px/1 var(--font);
+    }
+    .vis-dir svg { color: var(--accent); }
+    .auto-note { font-size: 11px; color: var(--text-3); }
+
+    /* position demo */
+    .vis-pos { padding: 12px 0; }
+    .mini-screen {
+      width: 150px; height: 92px; border-radius: 8px;
+      border: 1px solid var(--line-2); position: relative;
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .mini-win {
+      position: absolute; right: 16px; bottom: 14px; width: 62px; height: 34px;
+      border-radius: 5px; background: var(--qt-surface); border: 1px solid var(--qt-stroke);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+    }
+    .mini-win::before {
+      content: ""; position: absolute; left: 7px; top: 7px; width: 26px; height: 3px;
+      border-radius: 2px; background: var(--text-3);
+    }
+    .mini-win::after {
+      content: ""; position: absolute; left: 7px; top: 15px; width: 40px; height: 3px;
+      border-radius: 2px; background: var(--accent);
+    }
+    .cursor-svg { position: absolute; right: 84px; bottom: 46px; width: 15px; height: 15px; color: var(--text); }
+
+    /* accent demo */
+    .vis-accent { gap: 12px; }
+    .dot { width: 18px; height: 18px; border-radius: 50%; opacity: 0.85; }
+    .dot.active {
+      box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px rgba(193, 113, 74, 0.7);
+      opacity: 1;
+    }
+
+    /* history demo */
+    .vis-hist { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 6px; justify-content: center; }
+    .hist-row {
+      display: flex; align-items: center; gap: 10px;
+      font: 400 11.5px/1 var(--mono); color: var(--text-3);
+      border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;
+    }
+    .hist-row:last-child { opacity: 0.55; }
+    .hist-row .arrow { color: var(--accent); }
+    .hist-note { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-3); padding: 2px 2px 0; }
+    .switch {
+      width: 26px; height: 15px; border-radius: 999px; background: var(--accent); position: relative; flex: none;
+    }
+    .switch::after {
+      content: ""; position: absolute; right: 2px; top: 2px; width: 11px; height: 11px;
+      border-radius: 50%; background: #fff;
+    }
+
+    /* ---------- how ---------- */
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+    .step .num { font: 500 13px/1 var(--mono); color: var(--accent); letter-spacing: 0.06em; }
+    .step h3 { font-size: 16.5px; font-weight: 600; letter-spacing: -0.015em; margin: 14px 0 7px; }
+    .step p { font-size: 14.5px; color: var(--text-2); }
+    .step kbd {
+      font: 500 0.85em/1 var(--mono); color: var(--text);
+      background: var(--qt-surface); border: 1px solid var(--line-2); border-radius: 5px;
+      padding: 2px 6px 3px;
+      box-shadow: 0 1.5px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    /* ---------- download ---------- */
+    .dl { text-align: center; padding-bottom: 24px; }
+    .dl h2 { margin-top: 0; }
+    .dl .btn { margin-top: 34px; }
+    .dl-meta { margin-top: 20px; font: 400 12.5px/1.8 var(--mono); color: var(--text-3); }
+    .dl-note { margin-top: 14px; font-size: 12.5px; color: var(--text-3); }
+
+    /* ---------- footer ---------- */
+    footer {
+      margin-top: 104px; border-top: 1px solid var(--line);
+      padding: 30px 0 44px;
+    }
+    .foot {
+      max-width: 1024px; margin: 0 auto; padding: 0 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--text-3);
+    }
+
+    /* ---------- reveal ---------- */
+    .r { opacity: 0; transform: translateY(14px); transition: opacity 0.55s var(--ease), transform 0.55s var(--ease); }
+    .r.in { opacity: 1; transform: none; }
+    .bento .card:nth-child(2) { transition-delay: 0.05s; }
+    .bento .card:nth-child(3) { transition-delay: 0.05s; }
+    .bento .card:nth-child(4) { transition-delay: 0.1s; }
+    .bento .card:nth-child(5) { transition-delay: 0.15s; }
+    .steps .step:nth-child(2) { transition-delay: 0.07s; }
+    .steps .step:nth-child(3) { transition-delay: 0.14s; }
+    @media (prefers-reduced-motion: reduce) {
+      .r { opacity: 1; transform: none; transition: none; }
+      .caret { animation: none; }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 900px) {
+      .card { grid-column: span 3; }
+      .card.wide { grid-column: span 6; }
+    }
+    @media (max-width: 640px) {
+      .hero { padding-top: 64px; }
+      .sub { font-size: 16px; }
+      .card, .card.wide { grid-column: span 6; }
+      .steps { grid-template-columns: 1fr; gap: 30px; }
+      section { padding-top: 76px; }
+      .nav-link { display: none; }
+      .hero-meta span { display: block; line-height: 1.9; }
+      .hero-meta span + span::before { content: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header id="top-nav">
+    <div class="nav">
+      <a class="brand" href="#">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="#1C1C1E" stroke="rgba(255,255,255,0.09)" />
+          <path d="M8 10h8M11.5 10v1.6c0 3-1.7 5.4-4.2 6.6M9.6 13.4c0 2.2 2.2 4 4.6 4.8" stroke="#C1714A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M16.5 24.5 20 15l3.5 9.5M17.7 21.4h4.6" stroke="#F2F2F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        QuickTranslate
+      </a>
+      <nav class="nav-right">
+        <a class="nav-link" href="#features">Возможности</a>
+        <a class="nav-link" href="#how">Как работает</a>
+        <a class="btn btn-quiet btn-sm" href="#download">Скачать</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <!-- hero -->
+    <section class="hero" style="padding-top: 92px">
+      <p class="eyebrow">Переводчик для Windows</p>
+      <h1>
+        <span class="caps"><kbd class="cap">Ctrl</kbd><span class="plus">+</span><kbd class="cap">T</kbd></span><br />
+        и&nbsp;переведено.
+      </h1>
+      <p class="sub">
+        Лёгкое окно перевода поверх любого приложения.
+        Без аккаунтов и ключей — работает сразу после установки.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#download">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5M5 20h14" /></svg>
+          Скачать для Windows
+        </a>
+        <a class="btn btn-quiet" href="#how">Как это работает</a>
+      </div>
+      <p class="hero-meta"><span>бесплатно</span><span>83 МБ</span><span>Windows 10 / 11</span></p>
+    </section>
+
+    <!-- app window, rebuilt from the real design tokens -->
+    <div class="stage">
+      <div class="qt r" role="img" aria-label="Окно перевода QuickTranslate">
+        <div class="qt-head">
+          <span class="qt-tag">RU</span>
+          <span class="qt-swap">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3" /></svg>
+          </span>
+          <span class="qt-tag">EN</span>
+          <span class="qt-icons">
+            <span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9M17 8h3M4 16h3M11 16h9" /><circle cx="15" cy="8" r="2.3" /><circle cx="9" cy="16" r="2.3" /></svg></span>
+            <span><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18" /></svg></span>
+          </span>
+        </div>
+        <div class="qt-body">
+          <div class="qt-input">Переводчик, который всегда под рукой.<span class="caret"></span></div>
+          <div class="qt-result">
+            <div class="qt-translation">A translator that’s always at hand.</div>
+            <div class="qt-meta">
+              English
+              <span class="qt-meta-actions">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5" /><path d="M15 5.5A2 2 0 0 0 13 4H6a2 2 0 0 0-2 2v7a2 2 0 0 0 1.5 1.9" /></svg>
+                <span class="qt-esc">Esc</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="floor" aria-hidden="true"></div>
+
+    <!-- features -->
+    <section id="features">
+      <div class="sec-head r">
+        <p class="eyebrow">Возможности</p>
+        <h2>Ничего лишнего. Всё по делу.</h2>
+      </div>
+      <div class="bento">
+        <div class="card wide r">
+          <div class="vis vis-select" aria-hidden="true">
+            Выделите текст мышью — <mark>в любом приложении</mark><span class="pop"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M7.5 5v1.5c0 3-1.6 5.2-4 6.3M5.6 8.2c0 2.1 2.1 3.8 4.4 4.6" /><path d="M12.2 19.5 15.6 11l3.4 8.5M13.4 16.6h4.4" /></svg></span>
+          </div>
+          <div class="card-text">
+            <h3>Перевод по выделению</h3>
+            <p>Рядом с выделенным текстом появляется значок — один клик, и перевод открыт.</p>
+          </div>
+        </div>
+
+        <div class="card r">
+          <div class="vis vis-dir" aria-hidden="true">
+            <span class="chip">Русский</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3" /></svg>
+            <span class="chip">English</span>
+          </div>
+          <div class="card-text">
+            <h3>Направление — само</h3>
+            <p>Язык распознаётся автоматически, ⇄ меняет направление вручную.</p>
+          </div>
+        </div>
+
+        <div class="card r">
+          <div class="vis vis-pos" aria-hidden="true">
+            <div class="mini-screen">
+              <svg class="cursor-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 8.5-6.2 1.3L16 19l-2.6 1.4-3.2-6.2L5.8 18z" /></svg>
+              <div class="mini-win"></div>
+            </div>
+          </div>
+          <div class="card-text">
+            <h3>У курсора или по центру</h3>
+            <p>Окно открывается там, где вы работаете. Хоткей можно переназначить.</p>
+          </div>
+        </div>
+
+        <div class="card r">
+          <div class="vis vis-accent" aria-hidden="true">
+            <span class="dot" style="background: #4c8dff"></span>
+            <span class="dot" style="background: #63b47a"></span>
+            <span class="dot active" style="background: #c1714a"></span>
+            <span class="dot" style="background: #9a6bd0"></span>
+            <span class="dot" style="background: #e5484d"></span>
+          </div>
+          <div class="card-text">
+            <h3>Акцент из Windows</h3>
+            <p>Тема и цвет подхватываются из системы — или фирменная терракота.</p>
+          </div>
+        </div>
+
+        <div class="card r">
+          <div class="vis vis-hist" aria-hidden="true">
+            <div class="hist-row">deadline <span class="arrow">→</span> крайний срок</div>
+            <div class="hist-row">выручка <span class="arrow">→</span> revenue</div>
+            <div class="hist-note"><span class="switch"></span> история включена</div>
+          </div>
+          <div class="card-text">
+            <h3>Ничего не уходит на сторону</h3>
+            <p>История хранится только на этом компьютере и отключается одной галочкой.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- how -->
+    <section id="how">
+      <div class="sec-head r">
+        <p class="eyebrow">Как это работает</p>
+        <h2>Три шага. Без настройки.</h2>
+      </div>
+      <div class="steps">
+        <div class="step r">
+          <div class="num">01</div>
+          <h3>Установите</h3>
+          <p>Приложение появится в трее и будет запускаться вместе с Windows.</p>
+        </div>
+        <div class="step r">
+          <div class="num">02</div>
+          <h3>Вызовите</h3>
+          <p>Нажмите <kbd>Ctrl</kbd> <kbd>T</kbd> в любом приложении — или просто выделите текст.</p>
+        </div>
+        <div class="step r">
+          <div class="num">03</div>
+          <h3>Заберите перевод</h3>
+          <p>Копирование одной кнопкой, <kbd>Esc</kbd> закрывает окно.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- download -->
+    <section id="download" class="dl">
+      <div class="r">
+        <p class="eyebrow">Установка</p>
+        <h2 style="margin-top: 14px">Попробуйте на своём тексте.</h2>
+        <a class="btn btn-primary" href="REPLACE_WITH_DOWNLOAD_URL">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5M5 20h14" /></svg>
+          Скачать для Windows
+        </a>
+        <p class="dl-meta">QuickTranslate-0.1.0-setup.exe · 83 МБ · бесплатно</p>
+        <p class="dl-note">SmartScreen может предупредить о неизвестном издателе: «Подробнее» → «Выполнить в любом случае».</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="foot">
+      <span>QuickTranslate</span>
+      <span>Windows 10 / 11</span>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('top-nav');
+    addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 8), { passive: true });
+
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }),
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll('.r').forEach((el) => io.observe(el));
+  </script>
+</body>
+</html>
